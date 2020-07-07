@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.5" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee              http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+    
+    <display-name>Image Lazy Load App</display-name>
+  
+    <!-- Welcome File List -->
+    <welcome-file-list>
+        <welcome-file>index.html</welcome-file>
+    </welcome-file-list>
+
+      <servlet>
+	    <description></description>
+	    <display-name>StudioController</display-name>
+	    <servlet-name>StudioController</servlet-name>
+	    <servlet-class>controller.StudioController</servlet-class>
+     </servlet>
+     
+     <servlet-mapping>
+    	<servlet-name>StudioController</servlet-name>
+     	<url-pattern>/StudioController</url-pattern>
+     </servlet-mapping>
+
+</web-app>

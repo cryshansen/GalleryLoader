@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  	<script data-require="angular.js@*" data-semver="1.5.0" src="https://code.angularjs.org/1.5.0/angular.js"></script>
+
+</head>
+<body ng-app="lazy" ng-controller="AppController">
+    
+	<div class="flex-container">	
+		<div class="block" ngClass="block" ng-repeat="s in studioImages" lazy-load>							    	
+	    		<img class="w-100" ng-src="{{s.imgUrl}}" alt="{{studioName}}" > 						    	
+	    </div>	
+	</div>
+	
+<style>
+
+.block {
+	    position: absolute;
+	    background: #fff;
+	    padding: 10px;
+	    width: 300px;
+	    border: 1px solid #ddd;
+	    
+		
+	    -webkit-transition: all 1s ease-in-out;
+	    -moz-transition: all 1s ease-in-out;
+	    -o-transition: all 1s ease-in-out;
+	    -ms-transition: all 1s ease-in-out;
+	    transition: all 1s ease-in-out; 
+	}
+	
+	.vertical-center {
+	  min-height: 100%;
+	  min-height: 100vh;
+	  display: -webkit-box;
+	  display: -moz-box;
+	  display: -ms-flexbox;
+	  display: -webkit-flex;
+	  display: flex;
+	  
+	  
+	  
+	  -webkit-box-align: center;
+	  -webkit-align-items: center;
+	  -moz-box-align: center;
+	  -ms-flex-align: center;
+	  align-items: center;
+	  width: 100%;
+	  -webkit-box-pack: center;
+	  -moz-box-pack: center;
+	  -ms-flex-pack: center;
+	  -webkit-justify-content: center;
+	  justify-content: center;
+	}
+	.flex-container {
+	  display: flex;
+	  flex-flow: row wrap;
+	  justify-content: flex-start;
+	}
+
+.img-blur{
+    filter: blur(10px);
+}
+
+</style>
+<script>
+
+var app = angular
+    .module('lazy', [])
+    .controller("AppController", function( $scope , $http ) {
+    	var colCount =4;
+		var colWidth = 300; //default
+		var margin = 20;// default for running heights in image columns
+		var windowWidth = 0;
+		var width=300;
+		//This array is used to store the running heights of each column
+		
+		$scope.studioImages = [];
+		$scope.imageHeights = [];
+		$scope.imageWidths = [];
+		
+		var blocks = [];
+		
+		$scope.paramValue = 3;//$stateParams.studioId;  //studio 3
+		var url = "StudioController?action=GALLERY&id="+$scope.paramValue;
+		console.log(url);
+		
+		
+		$http({
+			
+			method: 'GET',
+	
+			url: url
+	
+			}).then(function success(response) {
+	
+					$scope.myWelcome = response.data;
+			
+					var studioVars=angular.fromJson(response.data);
+					
+					//lazy load code
+					var now = ( new Date() ).getTime();
+					
+					//mine
+					for(var i =0; i < studioVars.length;i++){
+						var studioImageObj = {};
+						
+						studioImageObj.id=studioVars[i].id;
+						studioImageObj.width = studioVars[i].width;
+						studioImageObj.height = studioVars[i].height;
+						studioImageObj.imgUrl = "images/studio"+ $scope.paramValue + "/576/"+studioVars[i].image;
+						$scope.studioImages.push(studioImageObj);
+						$scope.imageHeights.push(studioImageObj.height);
+						$scope.imageWidths.push(studioImageObj.width);
+
+						//blocks are for column placement loading
+						for(var j=0; j<$scope.colCount;j++){
+							blocks.push(studioImageObj.width);
+						}
+							
+						
+					}
+												
+					$scope.statusval = response.status;
+					$scope.statustext = response.statusText;
+					$scope.headers = response.headers();
+					//$scope.setupBlocks = setupBlocks();
+	
+			}, function error(response) {
+				
+					console.log(response.statusText);
+	
+			});
+		
+		
+		
+		
+		
+    })
+    .directive('lazyLoad', lazyLoad)
+
+	function lazyLoad(){
+		    return {
+		        restrict: 'A',
+		        link: function(scope, element, attrs){
+		            const observer = new IntersectionObserver(loadImg)
+		            const img = angular.element(element)[0];
+		            var blocks = [];
+		            var colWidth =300;
+		            var margin = 20;
+		            
+		            
+		            var colCount =4;
+		            var count = 0;
+		            
+		            setupBlocks();
+		            //console.log(img);
+		            console.log(scope.studioImages);
+		            observer.observe(img);
+		
+		            
+		            
+		            function loadImg(changes){
+		            	
+		            	//colcount
+		            	
+		            	
+		                changes.forEach(change => {
+		                	
+		                    if(change.intersectionRatio > 0){
+		                    	
+		                    	//change.target.classList.remove('img-blur');
+		
+		                    }
+		                    
+		                    
+		                })
+		                
+		                
+		                
+		            }
+		            
+		            function setupBlocks() {
+		    		    windowWidth = $(window).width(); 
+		    		    //console.log(windowWidth); //1180
+		    		    
+		    		    //console.log(colWidth); //300 
+		    		    colCount = Math.floor( windowWidth /( colWidth + margin ) );
+		    		    //console.log(colCount);//3
+		    		    for(var i=0; i < colCount; i++) {
+		    		    	//This array is used to store the running heights of each column				    	
+		    		    	blocks.push(20);				    	 
+		    		    }
+		
+		    		    positionBlocks();
+		    		}
+		
+		            function positionBlocks() {
+		    			// console.log("positionBlocks");
+		    			console.log("in each statement positioning" + colCount + " block " + blocks.length );
+		    			count=0;
+		    			
+		    		    $('.block').each(function(){
+		    		    	
+		    		    	console.log("foundBlock");
+		    		    	var ratio = scope.studioImages[count].width / colWidth;
+		    		        
+		    		    	var min =	minArrayVal(blocks);
+		    				var colHeight = Math.floor( scope.studioImages[count].height / ratio);
+		    				var imgWidth = Math.floor( scope.studioImages[count].width / ratio ) ;
+		    				//index number of each value to calculate the position from the left of the screen and top of screen
+		    		        var index = $.inArray(min, blocks);
+		    		       
+		    		        console.log("min val: " + min + "outer height: " + colHeight + " index of min val " + index + " image height " + scope.studioImages[count].height);
+		    		        var leftPos = margin + ( index * ( colWidth + margin ) );
+		    		        $(this).css({
+		    		            'left':leftPos+'px',
+		    		            'top':min+'px'		    		            
+		    		        });
+		    		        var elm = $(this).children().first().css({ 'width':imgWidth+'px' });
+		    		        console.log( min + colHeight + margin);
+		    		        blocks[index] = min + colHeight+margin;
+		    		        
+		    		       
+		    		      count++;
+		    		      
+		    		    });
+		    		   
+		    		}
+		    		
+		            
+		            function minArrayVal(array) {
+		    		    return Math.min.apply(Math, array);
+		    		};
+		            
+		    		
+		            
+		
+		        }
+	    
+	    }
+}
+
+</script>
+</body>
+</html>
